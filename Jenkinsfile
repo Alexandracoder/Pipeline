@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                        git credentialsId: 'Credencial-Git', url: 'https://github.com/Alexandracoder/tu-repo-pruebas.git', branch: 'main'
+                        git credentialsId: 'Credencial-Git', url: 'https://github.com/Alexandracoder/Pipeline.git', branch: 'main'
             }
         }
 
