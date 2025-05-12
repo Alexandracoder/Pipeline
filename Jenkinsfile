@@ -1,21 +1,28 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'alexandracoder/test-image'
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                        git credentialsId: 'Credencial-Git', url: 'https://github.com/Alexandracoder/Pipeline.git', branch: 'main'
+                git url: 'https://github.com/Alexandracoder/Pipeline.git', branch: 'main', credentialsId: 'Credencial-Git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    // Construcción del proyecto Java usando Maven o Gradle
+                    sh 'mvn clean install'  // Si usas Maven
+                    // sh 'gradle build'    // Si usas Gradle
+                }
             }
         }
 
         stage('Docker Build') {
             steps {
                 script {
-                    sh "docker build -t $IMAGE_NAME ."
+                    // Construcción de la imagen Docker
+                    sh 'docker build -t alexandracoder/test-image .'
                 }
             }
         }
@@ -23,8 +30,8 @@ pipeline {
         stage('Docker Tag') {
             steps {
                 script {
-                    def tag = "latest"
-                    sh "docker tag $IMAGE_NAME $IMAGE_NAME:$tag"
+                    // Etiquetado de la imagen Docker (si es necesario)
+                    sh 'docker tag alexandracoder/test-image alexandracoder/test-image:latest'
                 }
             }
         }
@@ -32,21 +39,16 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                        sh "docker push $IMAGE_NAME:latest"
-                    }
+                    // Subir la imagen Docker al repositorio
+                    sh 'docker push alexandracoder/test-image'
                 }
             }
         }
     }
 
     post {
-        success {
-            echo '🚀 La imagen Docker se construyó y subió correctamente.'
-        }
-        failure {
-            echo '❌ El pipeline falló. Revisa los logs para más detalles.'
+        always {
+            echo '❌ El pipeline falló. Revisa los logs para más detalles.'  // Mensaje si el pipeline falla
         }
     }
 }
